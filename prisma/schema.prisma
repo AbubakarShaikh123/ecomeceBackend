@@ -1,0 +1,63 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User{
+  id String @id @default(uuid())
+  email String @unique 
+  password String 
+  name String
+  orders Order[]
+  cartItems CartItem[]
+}
+
+model Product{
+  id String @id @default(uuid())
+  name String
+  description String
+  price Float
+  category String
+  imageUrl String
+  cartItems CartItem[]
+  orderItems OrderItem[]
+}
+
+
+
+model CartItem{
+  id String @id @default(uuid())
+  quantity Int
+  totalAmount Float
+  userId String 
+  productId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id] , onDelete: Cascade )
+
+  @@unique([userId, productId]) // Ensures no duplicate user-product pairs
+
+}
+
+model Order{
+  id String @id @default(uuid())
+  status String @default("Pending")
+  totalAmount Float
+  userId String 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+}
+
+model OrderItem{
+  id String @id @default(uuid())
+  quantity Int
+  pricePerUnit Float
+  productId String
+  orderId String
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
